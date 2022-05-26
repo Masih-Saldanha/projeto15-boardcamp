@@ -4,8 +4,6 @@ import dotenv from "dotenv";
 
 import connection from "./../src/database.js"
 
-// console.log(connection);
-
 dotenv.config();
 
 const app = express();
