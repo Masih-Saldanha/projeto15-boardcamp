@@ -1,6 +1,6 @@
 import connection from "./../database.js";
 
-export async function validateCategorie(req, res, next) {
+export async function validateCategory(req, res, next) {
     try {
         if (!req.body.name) return res.sendStatus(400);
         const categorie = await connection.query("SELECT * FROM categories WHERE name=$1;", [req.body.name]);
