@@ -85,14 +85,6 @@ export async function postRentalById(req, res) {
     const { rental } = res.locals;
     const returnDate = dayjs(Date.now());
     try {
-        // const rental = await connection.query(`
-        //     SELECT rentals.*, games."pricePerDay" 
-        //     FROM rentals
-        //     JOIN games ON games.id = rentals."gameId"
-        //     WHERE rentals.id = $1;
-        // `, [id]);
-
-
         const rentDate = dayjs(rental.rows[0].rentDate);
 
         const days = parseInt(returnDate.diff(dayjs(rentDate).format(), 'day'));
@@ -120,9 +112,14 @@ export async function postRentalById(req, res) {
 }
 
 export async function deleteRental(req, res) {
+    const id = req.params.id;    
     try {
+        await connection.query(`
+            DELETE FROM rentals
+            WHERE rentals.id = $1;
+        `, [id]);
 
-        res.sendStatus(201);
+        res.sendStatus(200);
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
