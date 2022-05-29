@@ -81,9 +81,38 @@ export async function postRental(req, res) {
 }
 
 export async function postRentalById(req, res) {
+    const id = req.params.id;
+    const { rental } = res.locals;
+    const returnDate = dayjs(Date.now());
     try {
+        // const rental = await connection.query(`
+        //     SELECT rentals.*, games."pricePerDay" 
+        //     FROM rentals
+        //     JOIN games ON games.id = rentals."gameId"
+        //     WHERE rentals.id = $1;
+        // `, [id]);
 
-        res.sendStatus(201);
+
+        const rentDate = dayjs(rental.rows[0].rentDate);
+
+        const days = parseInt(returnDate.diff(dayjs(rentDate).format(), 'day'));
+
+        const pricePerDay = parseInt(rental.rows[0].pricePerDay);
+
+        let delayFee;
+        if (days - rental.rows[0].daysRented <= 0) {
+            delayFee = 0;
+        } else {
+            delayFee = (days - rental.rows[0].daysRented) * pricePerDay;
+        }
+
+        await connection.query(`
+            UPDATE rentals 
+            SET "returnDate" = $1, "delayFee" = $2
+            WHERE rentals.id = $3;
+        `, [returnDate, delayFee, id]);
+
+        res.sendStatus(200);
     } catch (error) {
         console.log(error);
         res.status(500).send(error);

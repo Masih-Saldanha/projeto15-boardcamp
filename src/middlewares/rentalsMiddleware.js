@@ -1,6 +1,6 @@
 import connection from "./../database.js";
 
-export async function validateRental(req, res, next) {
+export async function validateRentalPost(req, res, next) {
     const { customerId, gameId, daysRented } = req.body;
     try {
         const customers = await connection.query(`
@@ -25,7 +25,7 @@ export async function validateRental(req, res, next) {
             JOIN categories ON games."categoryId" = categories.id;
         `);
         const rentals = rentalsList.rows;
-        
+
         function filterRentals(dataFromArray, query) {
             if (!query) return true;
             return dataFromArray === query;
@@ -33,6 +33,27 @@ export async function validateRental(req, res, next) {
         const filteredRentals = rentals.filter(rental => filterRentals(rental.gameId, parseInt(gameId)))
 
         if (filteredRentals.length >= gameIdVerify.rows[0].stockTotal) return res.sendStatus(400);
+
+        next();
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
+}
+
+export async function validateReturnDate(req, res, next) {
+    const id = req.params.id;
+    try {
+        const rental = await connection.query(`
+            SELECT rentals.*, games."pricePerDay" 
+            FROM rentals
+            JOIN games ON games.id = rentals."gameId"
+            WHERE rentals.id = $1;
+        `, [id]);
+        if (rental.rows.length === 0) return res.sendStatus(404);
+        if (rental.rows[0].returnDate) return res.sendStatus(400);
+
+        res.locals.rental = rental;
 
         next();
     } catch (error) {
