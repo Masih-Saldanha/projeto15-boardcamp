@@ -95,7 +95,7 @@ export async function postRentalById(req, res) {
         if (days - rental.rows[0].daysRented <= 0) {
             delayFee = 0;
         } else {
-            delayFee = (days - rental.rows[0].daysRented) * pricePerDay;
+            delayFee = days * pricePerDay;
         }
 
         await connection.query(`
